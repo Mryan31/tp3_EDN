@@ -1,14 +1,11 @@
 import numpy as np
 
-# === ADAPTAÇÃO 1: Nomes dos arquivos ===
-# Mantém os imports relativos (com '.')
 from . import fourier
 from . import metodo_linhas
 from . import dif_finitas_calor as fdm
-from . import graficos # ANTES: graficos_tp3
+from . import graficos
 
 def calcular_erro_l2(U_num, U_exata):
-    """Calcula o erro L2 relativo."""
     erro = np.sqrt(np.sum((U_num - U_exata)**2))
     norma_exata = np.sqrt(np.sum(U_exata**2))
     
@@ -18,17 +15,13 @@ def calcular_erro_l2(U_num, U_exata):
     return erro / norma_exata
 
 def run_tarefa_1_fourier(x_malha, t_malha):
-    """Executa a Tarefa 1: Solução de Fourier."""
     print("--- Executando Tarefa 1: Solução de Fourier ---")
     N = fourier.find_N_termos(epsilon=0.01)
     
     U_exata = fourier.solucao_fourier(x_malha, t_malha, N)
     
-    # Adiciona as fronteiras na malha x
     x_completo = np.linspace(0, 1, len(x_malha))
     
-    # === ADAPTAÇÃO 2: Chamadas do módulo de gráficos ===
-    # Todas as chamadas 'graficos_tp3.' viram 'graficos.'
     graficos.plotar_solucao_3d(x_completo, t_malha, U_exata.T, 
                                    "Tarefa 1 - Solucao Fourier")
     
@@ -40,7 +33,6 @@ def run_tarefa_1_fourier(x_malha, t_malha):
     return U_exata, x_completo
 
 def run_tarefa_2_mol(U_exata_grid, x_exato, t_malha):
-    """Executa a Tarefa 2: Método das Linhas."""
     print("\n--- Executando Tarefa 2: Método das Linhas ---")
     
     dx_lista = [0.1, 0.05, 0.025, 0.0125]
@@ -55,10 +47,6 @@ def run_tarefa_2_mol(U_exata_grid, x_exato, t_malha):
             t_pontos=t_malha
         )
         
-        # U_exata_grid está (t, x)
-        # U_mol está (x, t)
-        
-        # Precisamos interpolar a solução exata para a malha do MOL
         U_exata_interp = fourier.solucao_fourier(x_mol, t_malha, 85) # (t, x)
         
         erro = calcular_erro_l2(U_mol, U_exata_interp.T)
@@ -68,24 +56,18 @@ def run_tarefa_2_mol(U_exata_grid, x_exato, t_malha):
     graficos.plotar_convergencia_erro(dx_lista, erros_mol, 
                                           "Tarefa 2 - Erro MOL vs Delta_x")
     
-    # Plotar a última solução (mais precisa)
     graficos.plotar_solucao_3d(x_mol, t_mol, U_mol, "Tarefa 2 - Solucao MOL")
     print("--- Tarefa 2 Concluída ---")
 
 def run_tarefa_3_fdm(U_exata_grid, x_exato, t_malha):
-    """Executa a Tarefa 3: Métodos de Diferenças Finitas."""
     print("\n--- Executando Tarefa 3: Diferenças Finitas ---")
     
-    # Parâmetros
-    M = 21 # Pontos no espaço (dx = 1/20 = 0.05)
+    M = 21
     T_FINAL = t_malha[-1]
     
-    # mu = r = Delta_t / (Delta_x)^2
-    # dt = r * dx^2
     dx = 1.0 / (M - 1)
     
-    # MU_LISTA = [5/11, 5/9] #
-    MU_LISTA = [0.45, 0.55] # Valores aproximados e mais fáceis de digitar
+    MU_LISTA = [0.45, 0.55]
     
     for mu in MU_LISTA:
         print(f"\nTestando com mu (r) = {mu:.4f}")
@@ -93,19 +75,14 @@ def run_tarefa_3_fdm(U_exata_grid, x_exato, t_malha):
         dt = mu * (dx**2)
         N = int(T_FINAL / dt)
         
-        # Recria malhas com base nesses parâmetros
         x_fdm, t_fdm, U_base, M, N, r, dt, dx = fdm.setup_grid(M, N, mu)
         
-        # Condição inicial
         U_base[:, 0] = fourier.f_x(x_fdm)
         
-        # --- Soluções ---
         U_ftcs = fdm.solver_ftcs(U_base.copy(), M, N, r)
         U_btcs = fdm.solver_btcs(U_base.copy(), M, N, r)
         U_cn = fdm.solver_crank_nicholson(U_base.copy(), M, N, r)
 
-        # --- Comparação ---
-        # Interpola a solução exata para a malha FDM
         U_exata_fdm = fourier.solucao_fourier(x_fdm, t_fdm, 85) # (t, x)
         
         erro_ftcs = calcular_erro_l2(U_ftcs, U_exata_fdm.T)
@@ -133,25 +110,19 @@ def run_tarefa_3_fdm(U_exata_grid, x_exato, t_malha):
 
 if __name__ == "__main__":
     
-    # --- Configurações Globais do Problema ---
     L = 1.0
-    T_FINAL = 0.5 # Tempo final da simulação (ex: 0.5s)
+    T_FINAL = 0.5 
     
-    # Malha "exata" (resolução fina)
     DX_EXATO = 0.01
     DT_EXATO = 0.005
     
     x_malha_exata = np.arange(0, L + DX_EXATO, DX_EXATO)
     t_malha_exata = np.arange(0, T_FINAL + DT_EXATO, DT_EXATO)
 
-    # 1. Obter Solução "Exata" de Fourier
-    # U_exata_grid está (t, x)
     U_exata_grid, x_completo = run_tarefa_1_fourier(x_malha_exata, t_malha_exata)
     
-    # 2. Executar Método das Linhas e comparar
     run_tarefa_2_mol(U_exata_grid, x_completo, t_malha_exata)
     
-    # 3. Executar Diferenças Finitas e comparar
     run_tarefa_3_fdm(U_exata_grid, x_completo, t_malha_exata)
 
     print("\nSimulação do TP3 concluída. Verifique os arquivos .png gerados.")

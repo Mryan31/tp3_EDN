@@ -1,23 +1,7 @@
 import numpy as np
-from scipy.linalg import solve_banded # Ótimo para sistemas tridiagonais
+from scipy.linalg import solve_banded
 
 def setup_grid(M, N, mu):
-    """
-    Cria a malha espacial e temporal.
-    
-    NOTA SOBRE O PARÂMETRO MU:
-    O PDF define mu = Delta_x / (Delta_t)^2.
-    O parâmetro de estabilidade padrão para o calor é r = Delta_t / (Delta_x)^2.
-    
-    Os valores 5/11 (~0.45) e 5/9 (~0.55) sugerem que o PDF
-    queria testar a estabilidade do método explícito (FTCS),
-    cujo limite é r <= 0.5.
-    
-    VAMOS ASSUMIR que o PDF cometeu um erro de digitação e 
-    quis dizer r = Delta_t / (Delta_x)^2, e que os valores
-    dados (5/11, 5/9) são para 'r', não 'mu'.
-    Vamos chamar esse parâmetro de 'r' (ratio) para evitar confusão.
-    """
     L = 1.0
     
     # Malha espacial
@@ -38,11 +22,10 @@ def setup_grid(M, N, mu):
 
 def solver_ftcs(U, M, N, r):
     """
-    Resolve usando FTCS (Progressivo, Explícito).
     U_j^{n+1} = U_j^n + r * (U_{j+1}^n - 2*U_j^n + U_{j-1}^n)
     """
-    for n in range(N): # Itera no tempo
-        for j in range(1, M - 1): # Itera no espaço (pontos internos)
+    for n in range(N):
+        for j in range(1, M - 1):
             U[j, n+1] = U[j, n] + r * (U[j+1, n] - 2*U[j, n] + U[j-1, n])
     return U
 
@@ -51,7 +34,6 @@ def solver_btcs(U, M, N, r):
     Resolve usando BTCS (Regressivo, Implícito).
     -r*U_{j-1}^{n+1} + (1+2r)*U_j^{n+1} - r*U_{j+1}^{n+1} = U_j^n
     
-    Isso é um sistema tridiagonal.
     """
     # Diagonais para solve_banded: (superior, principal, inferior)
     # O sistema é (M-2)x(M-2).
@@ -71,7 +53,7 @@ def solver_btcs(U, M, N, r):
     A_banded[1, :] = diag_main
     A_banded[2, :-1] = diag_inf
     
-    for n in range(N): # Itera no tempo
+    for n in range(N):
         # O vetor 'b' é a solução no tempo anterior (U_j^n)
         b = U[1:-1, n]
         
@@ -92,7 +74,6 @@ def solver_crank_nicholson(U, M, N, r):
     """
     # --- Monta Matriz A (Lado Esquerdo) ---
     r2 = r / 2.0
-    # Mesma lógica do BTCS: sub/super-diagonais têm M-3 elementos
     diag_sup_A = np.full(M - 3, -r2)
     diag_main_A = np.full(M - 2, 1 + r)
     diag_inf_A = np.full(M - 3, -r2)

@@ -1,21 +1,14 @@
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
-import os # 1. Importar a biblioteca 'os'
+import os
 
-# 2. Definir o caminho da pasta onde os gráficos serão salvos
-# O caminho é relativo ao local de onde você roda o script (C:\EDN)
 SAVE_DIR = os.path.join('tp3_equacao_calor', 'graficos')
 
-# 3. Criar a pasta, se ela não existir
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 
 def plotar_solucao_3d(x, t, U, titulo):
-    """
-    Gera um gráfico 3D da solução u(x,t).
-    U deve ser (M, N) -> (pontos em x, pontos em t)
-    """
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111, projection='3d')
     
@@ -30,7 +23,6 @@ def plotar_solucao_3d(x, t, U, titulo):
     ax.set_zlabel('u(x,t) (temperatura)')
     fig.colorbar(surf, shrink=0.5, aspect=5)
     
-    # 4. Modificar o 'savefig'
     save_name = f"{titulo.replace(' ', '_').lower()}.png"
     save_path = os.path.join(SAVE_DIR, save_name)
     
@@ -57,7 +49,6 @@ def plotar_snapshots(x, U, t_vec, t_indices, titulo):
     ax.legend()
     ax.grid(True)
     
-    # 4. Modificar o 'savefig'
     save_name = f"{titulo.replace(' ', '_').lower()}_snapshots.png"
     save_path = os.path.join(SAVE_DIR, save_name)
 
@@ -66,9 +57,6 @@ def plotar_snapshots(x, U, t_vec, t_indices, titulo):
     plt.close(fig)
 
 def plotar_convergencia_erro(dx_lista, erros, titulo):
-    """
-    Plota o erro em função de Delta_x (ou outro parâmetro).
-    """
     fig = plt.figure(figsize=(8, 5))
     ax = fig.add_subplot(111)
     
@@ -81,7 +69,6 @@ def plotar_convergencia_erro(dx_lista, erros, titulo):
     ax.grid(True, which="both", ls="--")
     ax.legend()
     
-    # 4. Modificar o 'savefig'
     save_name = f"{titulo.replace(' ', '_').lower()}_erro.png"
     save_path = os.path.join(SAVE_DIR, save_name)
     

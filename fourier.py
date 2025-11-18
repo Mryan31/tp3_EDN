@@ -1,10 +1,6 @@
 import numpy as np
 
 def f_x(x):
-    """
-    Define a condição inicial f(x) conforme.
-    """
-    # Vetoriza a função para que ela aceite arrays numpy
     return np.piecewise(x, 
                         [np.logical_and(x > 0, x <= 0.5), 
                          np.logical_and(x > 0.5, x < 1)], 
@@ -25,19 +21,6 @@ def get_bn(n):
     return (8 * np.sin(n_pi / 2)) / (n_pi**2)
 
 def find_N_termos(epsilon=0.01):
-    """
-    Encontra o número de termos N para que o erro da série truncada
-    seja menor que epsilon.
-    
-    Vamos somar o valor absoluto dos coeficientes b_n até que 
-    a "cauda" da série seja menor que epsilon.
-    
-    Erro <= Soma(|b_n|) para n > N.
-    Vamos usar uma aproximação da integral para a cauda:
-    Soma(8/(n*pi)^2) ~ Integral(8/(x*pi)^2) dx = -8/(pi^2 * x)
-    
-    Vamos apenas somar iterativamente até ser pequeno o suficiente.
-    """
     N = 0
     erro_max_teorico = 0.0
     
@@ -54,16 +37,11 @@ def find_N_termos(epsilon=0.01):
     return N_calculado
 
 def solucao_fourier(x_vec, t, N):
-    """
-    Calcula a solução parcial de Fourier com N termos.
-    u(x,t) = Soma( b_n * sin(n*pi*x) * exp(-(n*pi)^2 * t) )
-    """
-    # Cria uma malha 2D de x e t se t for um vetor
     if isinstance(t, np.ndarray):
         x_grid, t_grid = np.meshgrid(x_vec, t)
     else:
         x_grid = x_vec
-        t_grid = t # t é um escalar
+        t_grid = t
 
     U = np.zeros_like(x_grid, dtype=float)
     
