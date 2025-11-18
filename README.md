@@ -51,9 +51,6 @@ tp3_EDN/
 │   ├── tarefa_3_-_cn_(mu=0.45).png
 │   └── tarefa_3_-_cn_(mu=0.55).png
 │
-├── relatorio/
-│   └── trabalho.tex
-│
 └── README.txt   (este arquivo)
 ```
 
